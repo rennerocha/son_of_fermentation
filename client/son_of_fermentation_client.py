@@ -2,12 +2,13 @@
 import csv
 import datetime
 import requests
+import time
 import RPi.GPIO as GPIO
 from w1thermsensor import W1ThermSensor
 
 
 FAN_PIN = 7
-TEMPERATURE_SET_POINT = 16
+TEMPERATURE_SET_POINT = 17
 
 
 def log_reading(temperature, fan_status):
@@ -19,7 +20,7 @@ def log_reading(temperature, fan_status):
         'field1': temperature,
         'field2': fan_status,
     }
-    requests.get(THINGSPEAK_URL, params=values)
+    requests.get(THINGSPEAK_URL, params=thingspeak_values)
 
     with open('son_of_fermentation.csv', 'a') as csvfile:
         csv_writer = csv.writer(csvfile)
@@ -55,5 +56,6 @@ def main():
 
 
 if __name__ == '__main__':
+    time.sleep(10)  # wait for internet
     main()
 
