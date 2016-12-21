@@ -8,7 +8,7 @@ from w1thermsensor import W1ThermSensor
 
 
 FAN_PIN = 7
-TEMPERATURE_SET_POINT = 17
+TEMPERATURE_SET_POINT = 20
 
 
 def log_reading(temperature, fan_status):
@@ -58,4 +58,3 @@ def main():
 if __name__ == '__main__':
     time.sleep(10)  # wait for internet
     main()
-
