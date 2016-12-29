@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from threading import Thread
 
+import chamber
 import logger
 import son_of_fermentation
 
@@ -23,6 +24,9 @@ def main():
 
     sof_thread = Thread(target=son_of_fermentation.start, args=(mqtt_settings, ))
     sof_thread.start()
+    
+    chamber_thread = Thread(target=chamber.start, args=(mqtt_settings, ))
+    chamber_thread.start()
 
 
 if __name__ == '__main__':

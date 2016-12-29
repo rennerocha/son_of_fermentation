@@ -9,6 +9,8 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe('myownbrewery/son_of_fermentation/temperature')
     client.subscribe('myownbrewery/son_of_fermentation/fan')
     client.subscribe('myownbrewery/son_of_fermentation/temperature/setpoint')
+    client.subscribe('myownbrewery/chamber/temperature')
+    client.subscribe('myownbrewery/chamber/humidity')
 
 
 def on_disconnect(client, userdata, rc):
@@ -27,12 +29,18 @@ def on_message(client, userdata, message):
         new_fan_status = message.payload
         log_data = userdata['fan_status'] != new_fan_status
         userdata['fan_status'] = new_fan_status
+    elif message.topic == 'myownbrewery/chamber/temperature':
+        log_data = True
+        userdata['chamber_temperature'] = message.payload
+    elif message.topic == 'myownbrewery/chamber/humidity':
+        log_data = True
+        userdata['chamber_humidity'] = message.payload
 
     if log_data:
         now = datetime.datetime.now()
         LOG_FILE = 'SON_OF_FERMENTATION_{0}.log'.format(now.strftime('%Y-%m-%d'))
 
-        fieldnames = ['datetime', 'temperature', 'setpoint', 'fan_status']
+        fieldnames = ['datetime', 'temperature', 'setpoint', 'fan_status', 'chamber_temperature', 'chamber_humidity']
         with open(LOG_FILE, 'a') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writerow({
@@ -40,14 +48,18 @@ def on_message(client, userdata, message):
                 'temperature': userdata.get('temperature', '0.0'),
                 'setpoint': userdata.get('setpoint', '0.0'),
                 'fan_status': userdata.get('fan_status', '0'),
+                'chamber_temperature': userdata.get('chamber_temperature', '0'),
+                'chamber_humidity': userdata.get('chamber_humidity', '0'),
             })
 
 
 def start(mqtt_settings, running=True):
     userdata = {
-        'setpoint': None,
-        'temperature': None,
-        'fan_status': None,
+        'setpoint': '0',
+        'temperature': '0',
+        'fan_status': '0',
+        'chamber_temperature': '0',
+        'chamber_humidity': '0',
     }
     mqtcc = mqtt.Client('LOGGER', clean_session=False, userdata=userdata)
 
