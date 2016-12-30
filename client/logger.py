@@ -18,23 +18,18 @@ def on_disconnect(client, userdata, rc):
 
 
 def on_message(client, userdata, message):
-    if message.topic == 'myownbrewery/son_of_fermentation/temperature':
-        log_data = True
-        userdata['temperature'] = message.payload
-    elif message.topic == 'myownbrewery/son_of_fermentation/temperature/setpoint':
-        new_setpoint = message.payload
-        log_data = userdata['setpoint'] != new_setpoint
-        userdata['setpoint'] = new_setpoint
-    elif message.topic == 'myownbrewery/son_of_fermentation/fan':
-        new_fan_status = message.payload
-        log_data = userdata['fan_status'] != new_fan_status
-        userdata['fan_status'] = new_fan_status
-    elif message.topic == 'myownbrewery/chamber/temperature':
-        log_data = True
-        userdata['chamber_temperature'] = message.payload
-    elif message.topic == 'myownbrewery/chamber/humidity':
-        log_data = True
-        userdata['chamber_humidity'] = message.payload
+    message_content = message.payload
+    property_by_topic = {
+        'myownbrewery/son_of_fermentation/temperature': 'temperature',
+        'myownbrewery/son_of_fermentation/temperature/setpoint': 'setpoint',
+        'myownbrewery/son_of_fermentation/fan': 'fan_status',
+        'myownbrewery/chamber/temperature': 'chamber_temperature',
+        'myownbrewery/chamber/humidity': 'chamber_humidity',
+    }
+    _property = property_by_topic.get(message.topic)
+    if _property:
+        log_data = userdata[_property] != message_content
+        userdata[_property] = message_content
 
     if log_data:
         now = datetime.datetime.now()
@@ -53,7 +48,7 @@ def on_message(client, userdata, message):
             })
 
 
-def start(mqtt_settings, running=True):
+def start(mqtt_settings):
     userdata = {
         'setpoint': '0',
         'temperature': '0',
