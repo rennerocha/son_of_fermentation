@@ -51,7 +51,7 @@ def on_message(client, userdata, message):
         STATUS['running'] = False
 
 
-def start(mqtt_settings):
+def start(mqtt_settings, running=True):
     global STATUS
 
     mqtcc = mqtt.Client('SON_OF_FERMENTATION', clean_session=False)
