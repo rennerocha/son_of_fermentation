@@ -13,29 +13,27 @@ def start(mqtt_settings):
     mqtcc = mqtt.Client('CHAMBER', clean_session=False)
 
     mqtcc.username_pw_set(
-        mqtt_settings.get('MQTT_BROKER_USERNAME'),
-        mqtt_settings.get('MQTT_BROKER_PASSWORD')
+        mqtt_settings.get('username'),
+        mqtt_settings.get('password')
     )
     mqtcc.connect(
-        mqtt_settings.get('MQTT_BROKER_HOST'),
-        mqtt_settings.get('MQTT_BROKER_PORT'),
+        mqtt_settings.get('host'),
+        mqtt_settings.get('port'),
         60
     )
     mqtcc.loop_start()
 
     while True:
-        humidity, temperature = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
-        if humidity is None or temperature is None:
-            continue
-
-        mqtcc.publish(
-            'myownbrewery/chamber/temperature',
-            temperature
-        )
-        mqtcc.publish(
-            'myownbrewery/chamber/humidity',
-            humidity
-        )
+        humidity, temperature = Adafruit_DHT.read_retry(DHT_TYPE, DHT_PIN)
+        if humidity is not None and temperature is not None:
+            mqtcc.publish(
+                'myownbrewery/chamber/temperature',
+                temperature
+            )
+            mqtcc.publish(
+                'myownbrewery/chamber/humidity',
+                humidity
+            )
 
         time.sleep(FREQUENCY_SECONDS)
 
