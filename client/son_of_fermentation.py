@@ -5,6 +5,7 @@ import time
 
 import paho.mqtt.client as mqtt
 import RPi.GPIO as GPIO
+import requests
 import w1thermsensor
 
 KEEP_ALIVE_SEC = 3600  # One minute
@@ -27,6 +28,18 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 logger.info('Client connected. Subscribing to messages.')
+
+
+def log_reading(temperature, fan_status):
+    # https://thingspeak.com/channels/154653
+    THINGSPEAK_CHANNEL_API_KEY = '1VDKH5HU2D7C6347'
+    THINGSPEAK_URL = 'https://api.thingspeak.com/update'
+    thingspeak_values = {
+        'api_key': THINGSPEAK_CHANNEL_API_KEY,
+        'field1': temperature,
+        'field2': fan_status,
+    }
+    requests.get(THINGSPEAK_URL, params=thingspeak_values)
 
 
 def on_connect(client, userdata, flags, rc):
@@ -120,6 +133,8 @@ def start(mqtt_settings, running=True):
             mqtcc.publish(
                 'myownbrewery/son_of_fermentation/fan', STATUS['fan'])
 
+        log_reading(last_reading, STATUS['fan'])
+
         time.sleep(30)
 
     logger.info('Stopping son_of_fermentation.')
@@ -147,4 +162,5 @@ def main():
 
 
 if __name__ == '__main__':
+    time.sleep(30)
     main()
